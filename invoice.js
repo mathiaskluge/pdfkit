@@ -1,74 +1,60 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 
-// Create an invoice function
 function generateInvoice() {
-  const doc = new PDFDocument({ margin: 50 });
+  // Create a new PDF document with A4 page size
+  const doc = new PDFDocument({ size: 'A4', margin: 50 });
 
   // Pipe the document to a file
   doc.pipe(fs.createWriteStream('invoice.pdf'));
 
-  // Add Header
-  doc
-    .fontSize(20)
-    .text('Invoice', { align: 'center' })
-    .moveDown();
+  // A4 dimensions in points: 595.28 x 841.89 (width x height)
 
-  // Add Company Information
-  doc
-    .fontSize(10)
-    .text('Company Name', 50, 50)
-    .text('Street Address', 50, 65)
-    .text('12345 City, Germany', 50, 80);
+  // Load the logo file and scale it proportionally
+  const logoPath = 'assets/logo.png'; // Replace with your logo file path
+  const maxLogoWidth = 100 * 2.83465; // 5 cm in points
+  const maxLogoHeight = 30 * 2.83465; // 3 cm in points
 
-  // Add Customer Information
-  doc
-    .text('Customer Name', 400, 50)
-    .text('Customer Street', 400, 65)
-    .text('67890 City, Germany', 400, 80);
+  // Get image dimensions using the 'image-size' library
+  const sizeOf = require('image-size');
+  const dimensions = sizeOf(logoPath);
 
-  // Invoice Details
-  doc
-    .moveDown()
-    .text('Invoice Number: 12345', { align: 'left' })
-    .text('Date: 2024-11-27', { align: 'left' });
+  // Calculate scaling factor for the logo
+  const scalingFactor = Math.min(maxLogoWidth / dimensions.width, maxLogoHeight / dimensions.height);
 
-  // Table Header
-  const tableTop = 150;
+  // Calculate scaled dimensions
+  const scaledWidth = dimensions.width * scalingFactor;
+  const scaledHeight = dimensions.height * scalingFactor;
+
+  // Draw the logo (Top Left)
+  doc.image(logoPath, 50, 50, { width: scaledWidth });
+
+  // Company Information and Invoice Details (Top Right)
+  const topRightX = 400; // Starting X position for the top-right block
+  const topRightY = 50; // Starting Y position for the top-right block
   doc
     .fontSize(10)
-    .text('Item', 50, tableTop)
-    .text('Unit Price', 300, tableTop, { align: 'right' })
-    .text('Quantity', 400, tableTop, { align: 'right' })
-    .text('Total', 500, tableTop, { align: 'right' });
+    .text('Company Name', topRightX, topRightY)
+    .text('Street Address', topRightX, topRightY + 15)
+    .text('12345 City, Germany', topRightX, topRightY + 30)
+    .moveDown(1);
 
-  // Table Rows
-  const rowY = tableTop + 20;
+  // Add Example IDs
   doc
-    .text('Sample Item', 50, rowY)
-    .text('€10.00', 300, rowY, { align: 'right' })
-    .text('2', 400, rowY, { align: 'right' })
-    .text('€20.00', 500, rowY, { align: 'right' });
+    .text('Customer ID: CUST-001', topRightX, topRightY + 60)
+    .text('Job ID: JOB-12345', topRightX, topRightY + 75)
+    .text('Invoice ID: INV-98765', topRightX, topRightY + 90);
 
-  // Totals Section
-  const totalsY = rowY + 40;
-  doc
-    .font('Helvetica-Bold')
-    .text('Subtotal', 400, totalsY)
-    .text('€20.00', 500, totalsY, { align: 'right' })
-    .font('Helvetica')
-    .text('VAT (19%)', 400, totalsY + 15)
-    .text('€3.80', 500, totalsY + 15, { align: 'right' })
-    .font('Helvetica-Bold')
-    .text('Total', 400, totalsY + 30)
-    .text('€23.80', 500, totalsY + 30, { align: 'right' });
-
-  // Footer
+  // Customer Address Block (Positioned 65mm from top and 20mm from left)
+  const customerAddressX = 20 * 2.83465; // Convert 20mm to points
+  const customerAddressY = 65 * 2.83465; // Convert 65mm to points
   doc
     .fontSize(10)
-    .text('Thank you for your business! Payment due within 14 days.', 50, 750, { align: 'center' });
+    .text('Customer Name', customerAddressX, customerAddressY)
+    .text('Customer Street', customerAddressX, customerAddressY + 15)
+    .text('67890 City, Germany', customerAddressX, customerAddressY + 30);
 
-  // Finalize PDF
+  // Finalize the document
   doc.end();
 }
 

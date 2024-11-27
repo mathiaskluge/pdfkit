@@ -18,6 +18,22 @@ function ensurePDFKitInstalled() {
   }
 }
 
+// Function to check if PDFkit image-size is installed
+function ensureImageSizeInstalled() {
+    try {
+        require.resolve('pdfkit image-size');
+        console.log('PDFKit image-size is already installed');
+    } catch (error) {
+        console.log('PDFKit image-size is not installed. Installing now   ');
+        try {
+            execSync('npm install pdfkit image-size', { stdio: 'inherit' });
+        } catch (installError) {
+            console.log('Failed to install PDFKit:', installError);
+            process.exit(1)
+        }
+    }
+}
+
 // Ensure that node_modules exists before checking
 if (!fs.existsSync('node_modules')) {
   console.log('node_modules folder is missing. Running `npm install`...');
@@ -26,3 +42,4 @@ if (!fs.existsSync('node_modules')) {
 
 // Check and install PDFKit
 ensurePDFKitInstalled();
+ensureImageSizeInstalled();
