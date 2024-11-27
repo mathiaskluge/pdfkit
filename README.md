@@ -7,7 +7,7 @@ Installs missing dependencies and ensures `pdfkit` and `pdfkit image-size` (for 
 ```
 npm run setup
 ```
-Generates an `invoice.pdf` at root from `invoice.js`
+Generates an `invoice.pdf` at root from `invoice.js` and provides render time.
 ```
 npm run start
 ```
